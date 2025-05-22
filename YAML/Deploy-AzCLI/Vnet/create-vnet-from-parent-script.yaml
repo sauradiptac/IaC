@@ -16,4 +16,4 @@ steps:
     arguments: '${{parameters.resourceGroupName}} ${{parameters.vnetName}} ${{parameters.location}} ${{parameters.addressRange}}'
 
 - script: echo "##vso[task.setvariable variable=vnetCreated;isOutput=true]$(vnetName)"
-      displayName: 'Set vnetCreated output variable'
+  displayName: 'Set vnetCreated output variable'
