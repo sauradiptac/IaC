@@ -1,0 +1,86 @@
+pr: none # Prevents automatic triggering on raising a PR for any branch
+trigger: none  # Prevents automatic triggering on code push to any branch
+
+parameters:  
+  - name: vnetName
+    displayName: "Enter VNet name (vnt-cin-aksagic)"
+    type: string
+    default: "vnt-cin-aksagic"
+
+  - name: addressRange
+    displayName: "Enter VNet Address Range (e.g., 10.0.0.0/16)"
+    type: string
+    default: "10.0.0.0/16"
+
+variables:
+  azureDevOpsServiceConnToARM: '$(AZURE_DEVOPS_SERVICE_CONN_TO_ARM)' # Variables in script are getting value from pipeline variables set.
+  resourceGroupName: '$(RG_NAME)' # Variables in script are getting value from pipeline variables set.
+  location: '$(RG_LOCATION)' # Variables in script are getting value from pipeline variables set.
+
+stages:
+- stage: Stage_InfrastructureDeployment
+  displayName: 'Stage - Deploy Infrastructure'
+  jobs:
+  - job: Job_DeployResourceGroup
+    displayName: 'Job - Call Resource Group Deployment'
+    steps:
+    # Templates can be of multiple types.
+    
+    # `create-resource-group-from-parent-script.yaml` calls the external YAML template for steps.
+    #- template: ResourceGroup/create-resource-group-from-parent-script.yaml
+    
+    # `create-resource-group-from-parent-inline.yaml` executes an inline bash script.
+    - template: ./ResourceGroup/create-resource-group-from-parent-inline.yaml
+          parameters:
+        azureDevOpsServiceConnToARM: '$(azureDevOpsServiceConnToARM)'
+        resourceGroupName: '$(resourceGroupName)'
+        location: '$(location)'
+  
+  - job: Job_DeployVnet
+    displayName: 'Job - Call Vnet Deployment'
+    dependsOn:
+     - Job_DeployResourceGroup
+    steps:
+    - template: ./Vnet/create-vnet-from-parent-script.yaml
+      parameters:
+        azureDevOpsServiceConnToARM: '$(azureDevOpsServiceConnToARM)'
+        resourceGroupName: '$(resourceGroupName)'
+        location: '$(location)'
+        vnetName: ${{parameters.vnetName}}
+        addressRange: ${{parameters.addressRange}}
+    # Reference output variable at the job level
+    outputs:
+      vnetCreated: $[dependencies.Job_DeployVnet.outputs['Job_DeployVnet.vnetCreated']]
+  
+  - job: Job_Summary
+    displayName: 'Job - Display summary of resources created'
+    dependsOn:
+     - Job_DeployResourceGroup
+     - Job_DeployVnet
+    steps:
+    - script: |
+        if [ -z "$(vnetCreated)" ]; then
+          echo "VNET creation job was skipped as per user choice."
+        else
+          echo "Virtual Network created: $(vnetCreated)"
+        fi
+      displayName: 'Echo VNET Creation Status'
+      env:
+        vnetCreated: $[ dependencies.Job_DeployVnet.outputs['Job_DeployVnet.vnetCreated'] ]  
+  
+  # - job: Job_Summary
+  #   displayName: 'Job - Display summary of resources created'
+  #   dependsOn:
+  #    - Job_DeployResourceGroup
+  #    - Job_DeployVnet
+  #   steps:
+  #   - task: AzureCLI@2
+  #     displayName: 'Child Step - Generate Summary'
+  #     inputs:
+  #       azureSubscription: '$(azureDevOpsServiceConnToARM)'
+  #       scriptType: 'bash'
+  #       scriptLocation: 'inlineScript'
+  #       inlineScript: |
+  #         echo "Using Resource Group: '$(resourceGroupCreated)'"
+  #         echo "Using Virtual Network: '$(vnetCreated)'"  
+  #         fi     

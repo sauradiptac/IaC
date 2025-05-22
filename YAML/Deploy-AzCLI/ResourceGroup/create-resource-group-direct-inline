@@ -1,0 +1,30 @@
+trigger: none # Prevents automatic trigger
+pr: none  # Prevents automatic trigger
+
+variables:
+  resourceGroupName: '$(RG_NAME)'   # Define this variable in the pipeline or set it in DevOps UI
+  location: '$(RG_LOCATION)'         # Define this variable in the pipeline or set it in DevOps UI
+  azureDevOpsServiceConnToARM: '$(AZURE_DEVOPS_SERVICE_CONN_TO_ARM)'  # Azure subscription from pipeline variable
+
+stages:
+- stage: DeployResourceGroup
+  displayName: 'Deploy Resource Group'
+  jobs:
+  - job: CreateResourceGroup
+    displayName: 'Create Resource Group if not exists'
+    steps:
+    - task: AzureCLI@2
+      displayName: 'Check and Create Resource Group'
+      inputs:
+        azureSubscription: '$(azureDevOpsServiceConnToARM)'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          # Check if the resource group exists
+          RG_EXISTS=$(az group exists --name ${{ variables.resourceGroupName }})
+          if [ "$RG_EXISTS" == "false" ]; then
+            echo "Creating resource group: ${{ variables.resourceGroupName }} in ${{ variables.location }}"
+            az group create --name ${{ variables.resourceGroupName }} --location ${{ variables.location }}
+          else
+            echo "Resource group ${{ variables.resourceGroupName }} already exists."
+          fi

@@ -1,0 +1,16 @@
+parameters: # These parameters are getting populated from the calling YAML.
+  azureDevOpsServiceConnToARM: ''
+  resourceGroupName: ''
+  location: ''
+  vnetName: ''
+  addressRange: ''
+
+steps:
+- task: AzureCLI@2
+  displayName: 'Child Step - Check and Create VNET'
+  inputs: 
+    azureSubscription: ${{ parameters.azureDevOpsServiceConnToARM }} # All the names of Keys in the 'inputs' segment should not be changed as they are specific to the Task used, in this case 'AzureCLI@2'
+    scriptType: 'bash'
+    scriptLocation: 'scriptPath' # Other option is 'inlineScript'
+    scriptPath: './Azure/Vnet/Scripts/create-vnet.sh' # On running the pipeline, the code is checked into /home/vsts/1/s. This path is set to the root of the Repo where usually the ReadMe.md file exists.
+    arguments: '${{parameters.resourceGroupName}} ${{parameters.vnetName}} ${{parameters.location}} ${{parameters.addressRange}}'

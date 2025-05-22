@@ -1,0 +1,23 @@
+parameters:
+  azureDevOpsServiceConnToARM: ''
+  resourceGroupName: ''
+  location: ''
+
+steps:
+- task: AzureCLI@2
+  displayName: 'Child Step - Check and Create Resource Group'
+  inputs:
+    azureSubscription: ${{ parameters.azureDevOpsServiceConnToARM }}
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      echo "Checking if Resource Group '${{parameters.resourceGroupName}}' exists."
+      RG_EXISTS=$(az group exists --name ${{ parameters.resourceGroupName }})
+      if [ "$RG_EXISTS" == "false" ]; then
+        echo "Creating resource group: ${{ parameters.resourceGroupName }} in ${{ parameters.location }}"
+        az group create --name ${{ parameters.resourceGroupName }} --location ${{ parameters.location }}
+        # Set pipeline variable dynamically
+        echo "##vso[task.setvariable variable=resourceGroupCreated;isOutput=true]${{parameters.resourceGroupName}}"
+      else
+        echo "Resource group ${{ parameters.resourceGroupName }} already exists."
+      fi
