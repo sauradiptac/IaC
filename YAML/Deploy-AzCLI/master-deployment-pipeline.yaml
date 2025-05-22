@@ -40,6 +40,8 @@ stages:
     displayName: 'Job - Call Vnet Deployment'
     dependsOn:
      - Job_DeployResourceGroup
+    outputs:
+      vnetCreated: $[dependencies.Job_DeployVnet.outputs['Job_DeployVnet.vnetCreated']]
     steps:
     - template: ./Vnet/create-vnet-from-parent-script.yaml
       parameters:
@@ -49,8 +51,6 @@ stages:
         vnetName: ${{parameters.vnetName}}
         addressRange: ${{parameters.addressRange}}
     # Reference output variable at the job level
-    outputs:
-      vnetCreated: $[dependencies.Job_DeployVnet.outputs['Job_DeployVnet.vnetCreated']]
   
   - job: Job_Summary
     displayName: 'Job - Display summary of resources created'
