@@ -32,8 +32,8 @@ stages:
     # `create-resource-group-from-parent-inline.yaml` executes an inline bash script.
     - template: ./ResourceGroup/create-resource-group-from-parent-inline.yaml
       parameters:
-        azureDevOpsServiceConnToARM: '$(azureDevOpsServiceConnToARM)'
         resourceGroupName: '$(resourceGroupName)'
+        azureDevOpsServiceConnToARM: '$(azureDevOpsServiceConnToARM)'
         location: '$(location)'
   
   - job: Job_DeployVnet
