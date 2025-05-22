@@ -55,8 +55,6 @@ stages:
     dependsOn:
      - Job_DeployResourceGroup
      - Job_DeployVnet
-    outputs:
-      vnetCreated: $[dependencies.Job_DeployVnet.outputs['Job_DeployVnet.vnetCreated']] 
     steps:
     - script: |
         if [ -z "$(vnetCreated)" ]; then
