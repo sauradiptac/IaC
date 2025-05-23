@@ -81,6 +81,7 @@ stages:
      - DeployResourceGroup
      - DeployVnet
     steps:
+    - checkout: none
     - script: |
         if [ -z "$vnetCreated" ]; then
           echo "VNET creation job was skipped as per user choice."
