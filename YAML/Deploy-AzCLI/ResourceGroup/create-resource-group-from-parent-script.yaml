@@ -10,5 +10,5 @@ steps:
     azureSubscription: ${{ parameters.azureDevOpsServiceConnToARM }} # All the names of Keys in the 'inputs' segment should not be changed as they are specific to the Task used, in this case 'AzureCLI@2'
     scriptType: 'bash'
     scriptLocation: 'scriptPath' # Other option is 'inlineScript'
-    scriptPath: './IaC/YAML/Deploy-AzCLI/ResourceGroup/Scripts/create-resource-group.sh' # On running the pipeline, the code is checked into /home/vsts/1/s. This path is set to the root of the Repo where usually the ReadMe.md file exists.
+    scriptPath: 'YAML/Deploy-AzCLI/ResourceGroup/Scripts/create-resource-group.sh' # On running the pipeline, the code is checked into /home/vsts/1/s. This path is set to the root of the Repo where usually the ReadMe.md file exists.
     arguments: '${{parameters.resourceGroupName}} ${{parameters.location}}'

@@ -1,0 +1,50 @@
+pr: none
+trigger: none
+
+parameters:  
+  - name: vnetName
+    displayName: "Enter VNet name (vnt-cin-aksagic)"
+    type: string
+    default: "vnt-cin-aksagic"
+
+  - name: addressRange
+    displayName: "Enter VNet Address Range (e.g., 10.0.0.0/16)"
+    type: string
+    default: "10.0.0.0/16"
+
+variables:
+  - group: IaC-Variables
+  - name: azureDevOpsServiceConnToARM
+    value: '$[variables.AZURE_DEVOPS_SERVICE_CONN_TO_ARM]'
+  - name: resourceGroupName
+    value: '$[variables.RG_NAME]'
+  - name: location
+    value: '$[variables.RG_LOCATION]'
+
+jobs:
+- job: DeployAll
+  displayName: 'Deploy All Infrastructure in Single Job'
+  steps:
+    # Step 1: Deploy Resource Group
+    - template: ./ResourceGroup/create-resource-group-from-parent-inline.yaml
+      parameters:
+        resourceGroupName: '$(resourceGroupName)'
+        azureDevOpsServiceConnToARM: '$(azureDevOpsServiceConnToARM)'
+        location: '$(location)'
+
+    # Step 2: Deploy VNet
+    - template: ./Vnet/create-vnet-from-parent-script.yaml
+      parameters:
+        azureDevOpsServiceConnToARM: '$(azureDevOpsServiceConnToARM)'
+        resourceGroupName: '$(resourceGroupName)'
+        location: '$(location)'
+        vnetName: ${{ parameters.vnetName }}
+        addressRange: ${{ parameters.addressRange }}
+
+    # Step 3: Display Summary
+    - script: |
+        echo "Resource Group: $(resourceGroupName)"
+        echo "Location: $(location)"
+        echo "Virtual Network: ${{ parameters.vnetName }}"
+        echo "Address Range: ${{ parameters.addressRange }}"
+      displayName: 'Display Summary'
