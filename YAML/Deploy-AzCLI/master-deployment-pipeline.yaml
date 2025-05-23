@@ -13,8 +13,9 @@ parameters:
     default: "10.0.0.0/16"
 
 variables:
-  # azureDevOpsServiceConnToARM: '$(AZURE_DEVOPS_SERVICE_CONN_TO_ARM)' # Variables in script are getting value from pipeline variables set.
-  azureDevOpsServiceConnToARM: 'ARM-Sauradipta_100-Outlook_2'
+  - group: 'IaC-Variables' # Variable group name
+  azureDevOpsServiceConnToARM: '$(AZURE_DEVOPS_SERVICE_CONN_TO_ARM)' # Variables in script are getting value from pipeline variables set.
+  # azureDevOpsServiceConnToARM: 'ARM-Sauradipta_100-Outlook_2'
   resourceGroupName: '$(RG_NAME)' # Variables in script are getting value from pipeline variables set.
   location: '$(RG_LOCATION)' # Variables in script are getting value from pipeline variables set.
 
