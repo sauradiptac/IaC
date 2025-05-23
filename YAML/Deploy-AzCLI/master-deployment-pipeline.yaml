@@ -1,6 +1,9 @@
 pr: none # Prevents automatic triggering on raising a PR for any branch
 trigger: none  # Prevents automatic triggering on code push to any branch
 
+# Pipeline parameters are used to pass values to the pipeline at runtime.
+# They can be used to customize the behavior of the pipeline without modifying the pipeline code.
+# Parameters can be defined at the top of the pipeline and can be used in any stage or job.
 parameters:  
   - name: vnetName
     displayName: "Enter VNet name (vnt-cin-aksagic)"
@@ -12,65 +15,81 @@ parameters:
     type: string
     default: "10.0.0.0/16"
 
+# Way to use Azure DevOps variable groups in the pipeline
+# https://learn.microsoft.com/en-us/azure/devops/pipelines/process/variables?view=azure-devops&tabs=yaml#variable-groups
+# It might ask for permission to access the variable group.
+# Variable groups are used to store values that you want to make available across multiple pipelines.
+# Variable groups can be used to store secrets, such as passwords or access tokens, and can be linked to multiple pipelines.
+#variables:
+#  - group: IaC-Variables
+  
+#  - name: azureDevOpsServiceConnToARM
+#    value: '$[variables.AZURE_DEVOPS_SERVICE_CONN_TO_ARM]'
+  
+#  - name: resourceGroupName
+#    value: '$[variables.RG_NAME]'
+  
+#  - name: location
+#    value: '$[variables.RG_LOCATION]'
+
+# Alternate way to use pipeline variables without variable groups
 variables:
-  - group: IaC-Variables
-  - name: azureDevOpsServiceConnToARM
-    value: '$[variables.AZURE_DEVOPS_SERVICE_CONN_TO_ARM]'
-  # - name: azureDevOpsServiceConnToARM
-  #   value: 'ARM-Sauradipta_100-Outlook_2'
-  - name: resourceGroupName
-    value: '$[variables.RG_NAME]'
-  - name: location
-    value: '$[variables.RG_LOCATION]'
+  # Runtime assignment for Azure Service Connection doesn't work.
+  # Compile time assignment is necessary.
+  azureDevOpsServiceConnToARM: 'ARM-Sauradipta_100-Outlook_2'
+  resourceGroupName: '$(RG_NAME)'
+  location: '$(RG_LOCATION)'
 
 stages:
-- stage: Stage_InfrastructureDeployment
-  displayName: 'Stage - Deploy Infrastructure'
+- stage: Infrastructure Deployment
+  displayName: 'Deploy Infrastructure'
   jobs:
-  - job: Job_DeployResourceGroup
-    displayName: 'Job - Call Resource Group Deployment'
+  - job: Deploy-ResourceGroup
+    displayName: 'Call Resource Group Deployment'
     steps:
     # Templates can be of multiple types.
     
     # `create-resource-group-from-parent-script.yaml` calls the external YAML template for steps.
-    #- template: ResourceGroup/create-resource-group-from-parent-script.yaml
+    #- template: ./ResourceGroup/create-resource-group-from-parent-script.yaml
     
     # `create-resource-group-from-parent-inline.yaml` executes an inline bash script.
     - template: ./ResourceGroup/create-resource-group-from-parent-inline.yaml
+      
+      # Template parameters are passed here.
+      # The template parameters are defined in the `create-resource-group-from-parent-inline.yaml` file.
       parameters:
         resourceGroupName: '$(resourceGroupName)'
         azureDevOpsServiceConnToARM: '$(azureDevOpsServiceConnToARM)'
         location: '$(location)'
   
-  - job: Job_DeployVnet
-    displayName: 'Job - Call Vnet Deployment'
+  - job: Deploy-Vnet
+    displayName: 'Call Vnet Deployment'
     dependsOn:
-     - Job_DeployResourceGroup
+     - Deploy-ResourceGroup
     steps:
     - template: ./Vnet/create-vnet-from-parent-script.yaml
       parameters:
         azureDevOpsServiceConnToARM: '$(azureDevOpsServiceConnToARM)'
         resourceGroupName: '$(resourceGroupName)'
         location: '$(location)'
-        vnetName: ${{parameters.vnetName}}
-        addressRange: ${{parameters.addressRange}}
-    # Reference output variable at the job level
+        vnetName: ${{ parameters.vnetName }}
+        addressRange: ${{ parameters.addressRange }}
   
-  - job: Job_Summary
-    displayName: 'Job - Display summary of resources created'
+  - job: Job-Summary
+    displayName: 'Display summary of resources created'
     dependsOn:
-     - Job_DeployResourceGroup
-     - Job_DeployVnet
+     - Deploy-ResourceGroup
+     - Deploy-Vnet
     steps:
     - script: |
-        if [ -z "$(vnetCreated)" ]; then
+        if [ -z "$vnetCreated" ]; then
           echo "VNET creation job was skipped as per user choice."
         else
           echo "Virtual Network created: $(vnetCreated)"
         fi
       displayName: 'Echo VNET Creation Status'
       env:
-        vnetCreated: $[ dependencies.Job_DeployVnet.outputs['Job_DeployVnet.vnetCreated'] ]  
+        vnetCreated: $[ dependencies.Deploy-Vnet.outputs['Deploy-Vnet.vnetCreated'] ]  
   
   # - job: Job_Summary
   #   displayName: 'Job - Display summary of resources created'
