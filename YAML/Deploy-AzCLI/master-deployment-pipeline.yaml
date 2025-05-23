@@ -13,15 +13,15 @@ parameters:
     default: "10.0.0.0/16"
 
 variables:
-  - group: 'IaC-Variables'
+  - group: IaC-Variables
   - name: azureDevOpsServiceConnToARM
-    value: '$(AZURE_DEVOPS_SERVICE_CONN_TO_ARM)'
+    value: '$[variables.AZURE_DEVOPS_SERVICE_CONN_TO_ARM]'
   # - name: azureDevOpsServiceConnToARM
   #   value: 'ARM-Sauradipta_100-Outlook_2'
   - name: resourceGroupName
-    value: '$(RG_NAME)'
+    value: '$[variables.RG_NAME]'
   - name: location
-    value: '$(RG_LOCATION)'
+    value: '$[variables.RG_LOCATION]'
 
 stages:
 - stage: Stage_InfrastructureDeployment
