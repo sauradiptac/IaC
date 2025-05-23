@@ -41,7 +41,7 @@ variables:
   location: '$(RG_LOCATION)'
 
 stages:
-- stage: Infrastructure Deployment
+- stage: InfrastructureDeployment
   displayName: 'Deploy Infrastructure'
   jobs:
   - job: Deploy-ResourceGroup
