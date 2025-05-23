@@ -44,7 +44,7 @@ stages:
 - stage: InfrastructureDeployment
   displayName: 'Deploy Infrastructure'
   jobs:
-  - job: Deploy-ResourceGroup
+  - job: DeployResourceGroup
     displayName: 'Call Resource Group Deployment'
     steps:
     # Templates can be of multiple types.
@@ -62,10 +62,10 @@ stages:
         azureDevOpsServiceConnToARM: '$(azureDevOpsServiceConnToARM)'
         location: '$(location)'
   
-  - job: Deploy-Vnet
+  - job: DeployVnet
     displayName: 'Call Vnet Deployment'
     dependsOn:
-     - Deploy-ResourceGroup
+     - DeployResourceGroup
     steps:
     - template: ./Vnet/create-vnet-from-parent-script.yaml
       parameters:
@@ -75,11 +75,11 @@ stages:
         vnetName: ${{ parameters.vnetName }}
         addressRange: ${{ parameters.addressRange }}
   
-  - job: Job-Summary
+  - job: Summary
     displayName: 'Display summary of resources created'
     dependsOn:
-     - Deploy-ResourceGroup
-     - Deploy-Vnet
+     - DeployResourceGroup
+     - DeployVnet
     steps:
     - script: |
         if [ -z "$vnetCreated" ]; then
@@ -89,7 +89,7 @@ stages:
         fi
       displayName: 'Echo VNET Creation Status'
       env:
-        vnetCreated: $[ dependencies.Deploy-Vnet.outputs['Deploy-Vnet.vnetCreated'] ]  
+        vnetCreated: $[ dependencies.DeployVnet.outputs['DeployVnet.vnetCreated'] ]  
   
   # - job: Job_Summary
   #   displayName: 'Job - Display summary of resources created'
