@@ -20,25 +20,25 @@ parameters:
 # It might ask for permission to access the variable group.
 # Variable groups are used to store values that you want to make available across multiple pipelines.
 # Variable groups can be used to store secrets, such as passwords or access tokens, and can be linked to multiple pipelines.
-#variables:
-#  - group: IaC-Variables
+variables:
+  - group: IaC-Variables
   
-#  - name: azureDevOpsServiceConnToARM
-#    value: '$[variables.AZURE_DEVOPS_SERVICE_CONN_TO_ARM]'
+  - name: azureDevOpsServiceConnToARM
+    value: '$[variables.AZURE_DEVOPS_SERVICE_CONN_TO_ARM]'
   
-#  - name: resourceGroupName
-#    value: '$[variables.RG_NAME]'
+  - name: resourceGroupName
+    value: '$[variables.RG_NAME]'
   
-#  - name: location
-#    value: '$[variables.RG_LOCATION]'
+  - name: location
+    value: '$[variables.RG_LOCATION]'
 
 # Alternate way to use pipeline variables without variable groups
-variables:
+#variables:
   # Runtime assignment for Azure Service Connection doesn't work.
   # Compile time assignment is necessary.
-  azureDevOpsServiceConnToARM: 'ARM-Sauradipta_100-Outlook_2'
-  resourceGroupName: '$(RG_NAME)'
-  location: '$(RG_LOCATION)'
+#  azureDevOpsServiceConnToARM: 'ARM-Sauradipta_100-Outlook_2'
+#  resourceGroupName: '$(RG_NAME)'
+#  location: '$(RG_LOCATION)'
 
 stages:
 - stage: InfrastructureDeployment
